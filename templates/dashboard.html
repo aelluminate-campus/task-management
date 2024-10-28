@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="flex flex-col min-h-screen bg-gray-100 font-sans">
+    <header class="bg-gray-800 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Dashboard</h1>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="/dashboard" class="hover:text-gray-300">Dashboard</a></li>
+                    <li><a href="/task" class="hover:text-gray-300">Task</a></li>
+                    <li><a href="/logout" class="hover:text-gray-300">Logout</a></li>
+                    <li><span class="text-gray-400">{{ current_user.username }} ({{ current_user.role }})</span></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto mt-8 p-4">
+        <section class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-3xl font-bold mb-4">Welcome to Your Dashboard</h2>
+            <p class="text-gray-600 mb-4">You are logged in and can manage your tasks and view user information here.</p>
+        </section>
+
+        {% if current_user.role == 'admin' %}
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4">Users</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="py-2 px-4 text-left">Username</th>
+                            <th class="py-2 px-4 text-left">Email</th>
+                            <th class="py-2 px-4 text-left">Role</th>
+                            <th class="py-2 px-4 text-left">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr class="border-b">
+                            <td class="py-2 px-4">{{ user.username }}</td>
+                            <td class="py-2 px-4">{{ user.email }}</td>
+                            <td class="py-2 px-4">{{ user.role }}</td>
+                            <td class="py-2 px-4">
+                                {% if current_user.role == 'admin' and user.id != current_user.id %}
+                                    {% if user.role == 'user' %}
+                                        <form method="POST" action="{{ url_for('promote_user', user_id=user.id) }}" class="inline">
+                                            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded text-sm">Promote to Admin</button>
+                                        </form>
+                                    {% elif user.role == 'admin' %}
+                                        <form method="POST" action="{{ url_for('demote_user', user_id=user.id) }}" class="inline">
+                                            <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-2 rounded text-sm">Demote to User</button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% else %}
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <p class="text-gray-600">You do not have permission to view user management content.</p>
+        </section>
+        {% endif %}
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-8 py-4">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 Your Website Name. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

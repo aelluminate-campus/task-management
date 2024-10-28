@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task</title>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="/task">Task</a></li>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/logout">Logout</a></li>
+            <li>{{ current_user.username }} - {{ current_user.role }}</li>
+        </ul>
+    </nav>
+
+    <h1>Tasks</h1>
+
+    <!-- Task Creation Form (only visible for admins) -->
+    {% if is_admin %}
+    <h2>Create a Task</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        {{ form.title.label }} {{ form.title() }}<br>
+        {{ form.description.label }} {{ form.description() }}<br>
+        {{ form.priority.label }} {{ form.priority() }}<br>
+
+        {{ form.deadline_month.label }} {{ form.deadline_month() }}<br>
+        {{ form.deadline_day.label }} {{ form.deadline_day() }}<br>
+        {{ form.deadline_year.label }} {{ form.deadline_year() }}<br>
+
+        {{ form.submit() }}
+    </form>
+    {% endif %}
+
+    <h2>Tasks</h2>
+
+    <label for="sort-by">Sort by:</label>
+    <select id="sort-by" onchange="sortTasks()">
+        <option value="title" {% if request.args.get('sort_by') == 'title' %}selected{% endif %}>Title</option>
+        <option value="deadline" {% if request.args.get('sort_by') == 'deadline' %}selected{% endif %}>Deadline</option>
+        <option value="priority" {% if request.args.get('sort_by') == 'priority' %}selected{% endif %}>Priority</option>
+    </select>
+    
+    <label for="sort-order">Order:</label>
+    <select id="sort-order" onchange="sortTasks()">
+        <option value="asc" {% if request.args.get('sort_order') == 'asc' %}selected{% endif %}>Ascending</option>
+        <option value="desc" {% if request.args.get('sort_order') == 'desc' %}selected{% endif %}>Descending</option>
+    </select>
+    
+    <script>
+        function sortTasks() {
+            var sortBy = document.getElementById('sort-by').value;
+            var sortOrder = document.getElementById('sort-order').value;
+            window.location.href = "/task?sort_by=" + sortBy + "&sort_order=" + sortOrder;  // Redirect to the task page with sorting parameters
+        }
+    </script>
+    
+
+    <!-- Tabs for tasks based on status -->
+    <div class="tabs">
+        <button onclick="showTab('todo')">To Do</button>
+        <button onclick="showTab('in-progress')">In Progress</button>
+        <button onclick="showTab('done')">Done</button>
+    </div>
+
+    <!-- To Do Tasks -->
+    <div id="todo" class="task-tab">
+        <h3>To Do</h3>
+        <ul>
+            {% for task in tasks if task.status == 'To Do' %}
+                <li>
+                    <strong>{{ task.title }}</strong> - {{ task.priority }} - Due: {{ task.deadline }}<br>
+                    <p>{{ task.description }}</p>
+                    <p>Added by: {{ task.owner.username }}</p>
+                    <form method="POST" action="{{ url_for('mark_in_progress', task_id=task.id) }}">
+                        <button type="submit">Mark as In Progress</button>
+                    </form>
+                </li>
+            {% else %}
+                <li>No tasks found.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- In Progress Tasks -->
+    <div id="in-progress" class="task-tab" style="display:none;">
+        <h3>In Progress</h3>
+        <ul>
+            {% for task in tasks if task.status == 'In Progress' %}
+                <li>
+                    <strong>{{ task.title }}</strong> - {{ task.priority }} - Due: {{ task.deadline }}<br>
+                    <p>{{ task.description }}</p>
+                    <p>Added by: {{ task.owner.username }}</p>
+                    <form method="POST" action="{{ url_for('mark_done', task_id=task.id) }}">
+                        <button type="submit">Mark as Done</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('mark_todo', task_id=task.id) }}">
+                        <button type="submit">Mark as To Do</button>
+                    </form>
+                </li>
+            {% else %}
+                <li>No tasks found.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Done Tasks -->
+    <div id="done" class="task-tab" style="display:none;">
+        <h3>Done</h3>
+        <ul>
+            {% for task in tasks if task.status == 'Done' %}
+                <li>
+                    <strong>{{ task.title }}</strong> - {{ task.priority }} - Due: {{ task.deadline }}<br>
+                    <p>{{ task.description }}</p>
+                    <p>Added by: {{ task.owner.username }}</p>
+                </li>
+            {% else %}
+                <li>No tasks found.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        function showTab(tab) {
+            document.getElementById('todo').style.display = 'none';
+            document.getElementById('in-progress').style.display = 'none';
+            document.getElementById('done').style.display = 'none';
+
+            document.getElementById(tab).style.display = 'block';
+        }
+    </script>
+</body>
+</html>

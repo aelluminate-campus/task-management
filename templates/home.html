@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to TMA!</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-blue-600 text-white p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold">Task Management Application</h1>
+                <nav>
+                    <ul class="flex space-x-4">
+                        <li><a href="/login" class="hover:text-blue-200">Login</a></li>
+                        <li><a href="/register" class="hover:text-blue-200">Register</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <main class="container mx-auto mt-8 p-4 flex-grow">
+            <section class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-3xl font-bold mb-4">Welcome to Our Website</h2>
+                <p class="text-gray-600 mb-4">This is the landing page for everyone. Discover amazing features and content!</p>
+                <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-300">Get Started</a>
+            </section>
+
+            <section class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-2">Feature 1</h3>
+                    <p class="text-gray-600">Description of feature 1 goes here.</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-2">Feature 2</h3>
+                    <p class="text-gray-600">Description of feature 2 goes here.</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-2">Feature 3</h3>
+                    <p class="text-gray-600">Description of feature 3 goes here.</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-4">
+            <div class="container mx-auto text-center">
+                <p>&copy; 2024 TMA. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

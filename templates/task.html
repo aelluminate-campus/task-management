@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="flex flex-col min-h-screen bg-gray-100 font-sans">
+    <header class="bg-gray-800 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">Tasks</h1>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="/task" class="hover:text-gray-300">Task</a></li>
+                    <li><a href="/dashboard" class="hover:text-gray-300">Dashboard</a></li>
+                    <li><a href="/logout" class="hover:text-gray-300">Logout</a></li>
+                    <li><span class="text-gray-400">{{ current_user.username }} - {{ current_user.role }}</span></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto mt-8 p-4">
+        {% if is_admin %}
+        <section class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-4">Create a Task</h2>
+            <form method="POST" class="space-y-4">
+                {{ form.hidden_tag() }}
+                <div>
+                    {{ form.title.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ form.title(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50") }}
+                </div>
+                <div>
+                    {{ form.description.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ form.description(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50", rows="3") }}
+                </div>
+                <div>
+                    {{ form.priority.label(class="block text-sm font-medium text-gray-700") }}
+                    {{ form.priority(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50") }}
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        {{ form.deadline_month.label(class="block text-sm font-medium text-gray-700") }}
+                        {{ form.deadline_month(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50") }}
+                    </div>
+                    <div>
+                        {{ form.deadline_day.label(class="block text-sm font-medium text-gray-700") }}
+                        {{ form.deadline_day(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50") }}
+                    </div>
+                    <div>
+                        {{ form.deadline_year.label(class="block text-sm font-medium text-gray-700") }}
+                        {{ form.deadline_year(class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50") }}
+                    </div>
+                </div>
+                <div>
+                    {{ form.submit(class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline") }}
+                </div>
+            </form>
+        </section>
+        {% endif %}
+
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4">Tasks</h2>
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex space-x-2">
+                    <label for="sort-by" class="text-sm font-medium text-gray-700">Sort by:</label>
+                    <select id="sort-by" onchange="sortTasks()" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <option value="title" {% if request.args.get('sort_by') == 'title' %}selected{% endif %}>Title</option>
+                        <option value="deadline" {% if request.args.get('sort_by') == 'deadline' %}selected{% endif %}>Deadline</option>
+                        <option value="priority" {% if request.args.get('sort_by') == 'priority' %}selected{% endif %}>Priority</option>
+                    </select>
+                </div>
+                <div class="flex space-x-2">
+                    <label for="sort-order" class="text-sm font-medium text-gray-700">Order:</label>
+                    <select id="sort-order" onchange="sortTasks()" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                        <option value="asc" {% if request.args.get('sort_order') == 'asc' %}selected{% endif %}>Ascending</option>
+                        <option value="desc" {% if request.args.get('sort_order') == 'desc' %}selected{% endif %}>Descending</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="flex space-x-2">
+                    <button onclick="showTab('todo')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">To Do</button>
+                    <button onclick="showTab('in-progress')" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded">In Progress</button>
+                    <button onclick="showTab('done')" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Done</button>
+                </div>
+            </div>
+
+            <div id="todo" class="task-tab">
+                <h3 class="text-xl font-bold mb-2">To Do</h3>
+                <ul class="space-y-4">
+                    {% for task in tasks if task.status == 'To Do' %}
+                        <li class="bg-gray-50 p-4 rounded-lg shadow">
+                            <h4 class="text-lg font-semibold">{{ task.title }}</h4>
+                            <p class="text-gray-600">{{ task.description }}</p>
+                            <p class="text-sm text-gray-500">Priority: {{ task.priority }} | Due: {{ task.deadline }}</p>
+                            <p class="text-sm text-gray-500">Added by: {{ task.owner.username }}</p>
+                            <form method="POST" action="{{ url_for('mark_in_progress', task_id=task.id) }}" class="mt-2">
+                                <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-2 rounded text-sm">Mark as In Progress</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li>No tasks found.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div id="in-progress" class="task-tab" style="display:none;">
+                <h3 class="text-xl font-bold mb-2">In Progress</h3>
+                <ul class="space-y-4">
+                    {% for task in tasks if task.status == 'In Progress' %}
+                        <li class="bg-gray-50 p-4 rounded-lg shadow">
+                            <h4 class="text-lg font-semibold">{{ task.title }}</h4>
+                            <p class="text-gray-600">{{ task.description }}</p>
+                            <p class="text-sm text-gray-500">Priority: {{ task.priority }} | Due: {{ task.deadline }}</p>
+                            <p class="text-sm text-gray-500">Added by: {{ task.owner.username }}</p>
+                            <div class="mt-2 space-x-2">
+                                <form method="POST" action="{{ url_for('mark_done', task_id=task.id) }}" class="inline">
+                                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-2 rounded text-sm">Mark as Done</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('mark_todo', task_id=task.id) }}" class="inline">
+                                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-sm">Mark as To Do</button>
+                                </form>
+                            </div>
+                        </li>
+                    {% else %}
+                        <li>No tasks found.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div id="done" class="task-tab" style="display:none;">
+                <h3 class="text-xl font-bold mb-2">Done</h3>
+                <ul class="space-y-4">
+                    {% for task in tasks if task.status == 'Done' %}
+                        <li class="bg-gray-50 p-4 rounded-lg shadow">
+                            <h4 class="text-lg font-semibold">{{ task.title }}</h4>
+                            <p class="text-gray-600">{{ task.description }}</p>
+                            <p class="text-sm text-gray-500">Priority: {{ task.priority }} | Due: {{ task.deadline }}</p>
+                            <p class="text-sm text-gray-500">Added by: {{ task.owner.username }}</p>
+                        </li>
+                    {% else %}
+                        <li>No tasks found.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-8 py-4">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 Your Website Name. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function sortTasks() {
+            var sortBy = document.getElementById('sort-by').value;
+            var sortOrder = document.getElementById('sort-order').value;
+            window.location.href = "/task?sort_by=" + sortBy + "&sort_order=" + sortOrder;
+        }
+
+        function showTab(tab) {
+            document.getElementById('todo').style.display = 'none';
+            document.getElementById('in-progress').style.display = 'none';
+            document.getElementById('done').style.display = 'none';
+            document.getElementById(tab).style.display = 'block';
+        }
+    </script>
+</body>
+</html>
